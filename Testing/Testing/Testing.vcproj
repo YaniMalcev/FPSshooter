@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\main_old.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Terrain.cpp"
 				>
 			</File>
