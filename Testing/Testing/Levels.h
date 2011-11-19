@@ -1,7 +1,9 @@
 #ifndef __LEVELS_H__
 #define __LEVELS_H__
 #include "Globalincludes.h"
+#include "Terrain.h"
 struct GameLevel{
+
 	virtual void Init() =0;
     virtual GameLevel* OnUpdate() =0;
     virtual void Render() =0;

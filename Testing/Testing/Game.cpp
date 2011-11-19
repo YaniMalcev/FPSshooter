@@ -217,7 +217,6 @@ void Game::render(){
                                0.01f,   // the near view-plane
                                500.0f);    // the far view-plane
     d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection); // set the projection
-
 	terrain->Draw(d3ddev);
     d3ddev->EndScene(); 
 
