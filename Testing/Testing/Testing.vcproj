@@ -185,7 +185,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\main_old.cpp"
+				RelativePath=".\Player.cpp"
 				>
 			</File>
 			<File
@@ -200,6 +200,10 @@
 			>
 			<File
 				RelativePath=".\Camera.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Entity.h"
 				>
 			</File>
 			<File
@@ -220,6 +224,10 @@
 			</File>
 			<File
 				RelativePath=".\Levels.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Player.h"
 				>
 			</File>
 			<File

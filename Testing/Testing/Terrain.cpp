@@ -2,7 +2,7 @@
 #include "Terrain.h"
 
 
-Terrain::Terrain(LPDIRECT3DDEVICE9 d3ddev)
+Terrain::Terrain(LPDIRECT3DDEVICE9& d3ddev)
 {
 m_pTerrainVB = NULL;
 m_pTerrainIB = NULL;
@@ -38,7 +38,7 @@ for(unsigned x = 0;x < (TERRAIN_X + 1);++x)
 File.close();
 }
 
-void Terrain::LoadVertexBuffer(LPDIRECT3DDEVICE9 d3ddev){
+void Terrain::LoadVertexBuffer(LPDIRECT3DDEVICE9& d3ddev){
 CUSTOMVERTEX* pVertexData;
 
 //create vertex buffer and fill in vertcies
@@ -78,7 +78,7 @@ for(int x = 0;x < (TERRAIN_X);++x)
 
 }
 
-void Terrain::LoadIndexBuffer(LPDIRECT3DDEVICE9 d3ddev){
+void Terrain::LoadIndexBuffer(LPDIRECT3DDEVICE9& d3ddev){
 
 short* pIndexData=0;
 //create index buffer and fill in indices
@@ -103,7 +103,7 @@ m_pTerrainIB->Unlock();
 }
 
 
-void Terrain::CreateTerrain(LPDIRECT3DDEVICE9 d3ddev)
+void Terrain::CreateTerrain(LPDIRECT3DDEVICE9& d3ddev)
 {
 	LoadHeighMap("heightmap.raw");
 	LoadVertexBuffer(d3ddev);
@@ -118,19 +118,48 @@ void Terrain::CreateTerrain(LPDIRECT3DDEVICE9 d3ddev)
 /* Description:	draw terrain											*/
 /************************************************************************/
 
-void Terrain::Draw(LPDIRECT3DDEVICE9 d3ddev)
+void Terrain::Draw(LPDIRECT3DDEVICE9& d3ddev)
 {
 
 	d3ddev->SetFVF(CUSTOMFVF);
 
 	D3DMATERIAL9 material;    // create the material struct
 	ZeroMemory(&material, sizeof(D3DMATERIAL9));    // clear out the struct for use
-	material.Diffuse = D3DXCOLOR(0.6f, 0.6f, 0.0f, 1.0f);    // set diffuse color to yellow
-	material.Ambient = D3DXCOLOR(0.6f, 0.6f, 0.0f, 1.0f);    // set ambient color to yellow
+	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);    // set diffuse color to yellow
+	material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);    // set ambient color to yellow
 	d3ddev->SetMaterial(&material);    // set the globably-used material to &material
 	d3ddev->SetStreamSource(0,m_pTerrainVB,0,sizeof(CUSTOMVERTEX));
 	d3ddev->SetIndices(m_pTerrainIB);
 	d3ddev->SetTexture(0, texture);
 	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,m_dwTerrainVertices,0,m_dwTerrainPrimitives);
 }//Draw
+
+float Terrain::Set_height(float x,float z){
+	if(x<0 || x>256 || z<0 || z>256) return 0;
+
+	float height;
+	float A = HeightMap[(int)x][(int)z];
+	float B = HeightMap[(int)x][(int)z+1];
+	float C = HeightMap[(int)x+1][(int)z];
+	float D = HeightMap[(int)x+1][(int)z+1];
+	float dx = x - (int)x;
+	float dz = z - (int)z;
+
+	if(dz < 1.0f - dx) // upper triangle ABC
+	{
+		float uy = B - A; // A->B
+		
+		float vy = C - A; // A->C
+		height = A + uy*dx + vy*dz;
+	}
+	else // lower triangle DCB
+	{
+
+		float uy = C - D; // D->C
+		float vy = B - D; // D->B
+		height = D + (uy*(1.0f - dx))+(vy*(1.0f - dz));
+	} return height/3;
+}
+
+
 

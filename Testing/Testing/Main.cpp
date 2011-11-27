@@ -10,4 +10,5 @@ int WINAPI WinMain(HINSTANCE hInstance,
     game.Init(hInstance);
 	game.Run();
 	game.End();
+	
 }

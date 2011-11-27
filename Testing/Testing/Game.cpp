@@ -12,6 +12,8 @@ Init_Window(hInstance);
 Init_D3D();
 init_input(hWnd);
 terrain = new Terrain(d3ddev);
+player = new Player(d3ddev);
+camera->Attach(player);
 levelmanager= new LevelManager();
 GameLevel* level1 = new Level1();
 LevelManager::currentLevel = level1;
@@ -75,7 +77,7 @@ void Game::Init_D3D(){
     D3DLIGHT9 light;    // create the light struct
     ZeroMemory(&light, sizeof(light));    // clear out the light struct for use
     light.Type = D3DLIGHT_DIRECTIONAL;    // make the light type 'directional light'
-    light.Diffuse = D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f);    // set the light's color
+    light.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);    // set the light's color
     light.Direction = D3DXVECTOR3(-1.0f, -1.5f,-1.0f); 
 
     d3ddev->SetLight(0, &light);    // send the light struct properties to light 
@@ -85,7 +87,7 @@ void Game::Init_D3D(){
     d3ddev->SetRenderState(D3DRS_LIGHTING, TRUE);    // turn off the 3D lighting
     d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);    // turn off culling
     d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);    // turn on the z-buffer
-	d3ddev->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(200, 200, 200)); //set global light
+	d3ddev->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50)); //set global light
 }
 void Game::init_input(HWND hWnd)
 {
@@ -116,6 +118,7 @@ void Game::HandleMouse(RAWINPUT InputData){
 	MousePos.y -= SCREEN_HEIGHT / 2;
 	camera->movingY += MousePos.x * 0.002f;
 	camera->movingX -= MousePos.y * 0.002f;
+
 		
 	}
 	
@@ -125,19 +128,24 @@ void Game::HandleKeyboard()
 {
 	D3DXVECTOR3 Direction;
 
-		if( KEY_DOWN(0x57))
-			camera->Move(camera->C_LookAtPos - camera->C_Postion);
-		if( KEY_DOWN(0x53))
-			camera->Move(camera->C_Postion - camera->C_LookAtPos);
+		if( KEY_DOWN(0x57)){
+			Direction = camera->C_LookAtPos - camera->C_Position;	
+		}
+		if( KEY_DOWN(0x53)){
+			Direction = camera->C_Position - camera->C_LookAtPos;
+		}
 		if( KEY_DOWN(0x41)){
-			D3DXVec3Cross(&Direction,&(camera->C_LookAtPos - camera->C_Postion),&camera->C_UpVect);
-			camera->Move(Direction);
+			D3DXVec3Cross(&Direction,&(camera->C_LookAtPos - camera->C_Position),&camera->C_UpVect);	
 		}
 		if( KEY_DOWN(0x44)){
-			D3DXVec3Cross(&Direction,&(camera->C_Postion- camera->C_LookAtPos ),&camera->C_UpVect);
-			camera->Move(Direction);
+			D3DXVec3Cross(&Direction,&(camera->C_Position- camera->C_LookAtPos ),&camera->C_UpVect);
 		}
-	
+
+		if(camera->attached) player->Move(Direction);
+		else camera->Move(Direction);
+
+
+
 	if( ::GetAsyncKeyState(VK_ESCAPE) & 0x8000f )
 		PostQuitMessage(0);
 }
@@ -165,7 +173,6 @@ LRESULT CALLBACK Game::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			game.HandleMouse(MouceData);		
 			
 		}break;
-
 		case WM_KEYDOWN:
 		{
 			extern Game game;
@@ -192,15 +199,28 @@ MSG msg;
         {
             update();
             lastTime += TIME_PER_FRAME;
-
         }
 		render();		
 	}
+	
+}
+
+void Game::Set_objects_height(){
+	player->Position.y = terrain->Set_height(player->Position.x,player->Position.z)+0.9;
+
 }
 
 void Game::update(){
 	levelmanager->Update();
+	if(player!=NULL)
+	{
+		if(camera->attached)player->Rotate+= (camera->movingY - player->Rotate);
+		else player->Rotate+= camera->movingY;
+		player->Update();
+	}
+	Set_objects_height();
 	camera->Update(d3ddev);
+
 }
 void Game::render(){
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
@@ -218,6 +238,7 @@ void Game::render(){
                                500.0f);    // the far view-plane
     d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection); // set the projection
 	terrain->Draw(d3ddev);
+	player->Draw(d3ddev);
     d3ddev->EndScene(); 
 
     d3ddev->Present(NULL, NULL, NULL, NULL);

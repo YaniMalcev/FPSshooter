@@ -13,7 +13,8 @@ using namespace std;
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 1000
-
+#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1)
+struct CUSTOMVERTEX {FLOAT X, Y, Z; D3DVECTOR NORMAL;FLOAT U,V;};
 
 
 #endif
